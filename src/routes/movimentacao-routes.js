@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getMov, getMovId } = require('../controllers/movimentacao-controller');
+const { getMov, getMovId, postMovId } = require('../controllers/movimentacao-controller');
 
 router.get('/', getMov);
 router.get('/:id', getMovId);
+router.post('/', postMovId);
 
 module.exports = router;
