@@ -1,0 +1,13 @@
+- Consultar a movimentação que ainda não foi importada.
+- Formatar os dados para o formato da procedure de insert na movimentação do paciente do portaria:
+{
+    Codigo do paciente,
+    Cartao do cracha,
+    Setor,
+    Empresa,
+    Atendimento,
+    Mensagem
+}
+
+- Realizar o insert e alterar a coluna do registro "SN_IMPORTADA" para "S".
+Criar tarefa agendada na api.
