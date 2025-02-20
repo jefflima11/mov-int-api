@@ -196,11 +196,9 @@ async function validaTipoDeMovimentacao(atendimento) {
             etapa = 1;
 
             return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
-            // return { message: `Movimentação de internação já registrada ${etapa}` }
         } else {
             etapa = 2;
             return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
-            // return { message: `Movimentação de internação já registrada ${etapa}` }
         }
     } catch (error) {
 
@@ -209,4 +207,34 @@ async function validaTipoDeMovimentacao(atendimento) {
     };
 }
 
-module.exports = { buscarMovimentacoes,buscarMovimentacaoPorId, inserirMovimentacao, verificaRegistroDeMovimentoNaPortaria, validaTipoDeMovimentacao };
+async function processarMovimentacoesAutomaticamente() {
+    console.log('Processando movimentações automaticamente...');
+
+    const connection = await connectOracle();
+    try {
+        const movimentacoes = await connection.execute(
+            `SELECT CD_ATENDIMENTO
+            FROM DBAMV.LOG_MOV_INT_HUMS
+            WHERE SN_IMPORTADO = 'N'`
+        );
+
+        for (let i = 0; i < movimentacoes.rows.length; i++) {
+            const atendimento = movimentacoes.rows[i][0];
+            await validaTipoDeMovimentacao(atendimento);
+        }
+
+        console.log('Movimentações processadas com sucesso');
+    } catch (error) {
+        console.error('Erro ao processar movimentações', error);
+    } finally {
+        await connection.close();
+    }
+};
+
+module.exports = { 
+    buscarMovimentacoes, 
+    buscarMovimentacaoPorId, 
+    inserirMovimentacao, 
+    verificaRegistroDeMovimentoNaPortaria, 
+    validaTipoDeMovimentacao, 
+    processarMovimentacoesAutomaticamente };

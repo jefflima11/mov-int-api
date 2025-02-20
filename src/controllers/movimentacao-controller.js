@@ -22,7 +22,6 @@ const getMovId = async (req, res) => {
 const postMovId = async (req, res) => {
     try {
         const { atendimento } = req.body;
-        // const result = await inserirMovimentacao(atendimento);
         const result = await validaTipoDeMovimentacao(atendimento);
 
         if (result.error) {
