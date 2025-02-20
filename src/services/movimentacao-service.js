@@ -222,7 +222,7 @@ async function processarMovimentacoesAutomaticamente() {
             const atendimento = movimentacoes.rows[i][0];
             await validaTipoDeMovimentacao(atendimento);
         }
-
+        console.clear();
         console.log('Movimentações processadas com sucesso');
     } catch (error) {
         console.error('Erro ao processar movimentações', error);
