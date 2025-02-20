@@ -103,7 +103,51 @@ async function inserirMovimentacao( atendimento,idLogMovimentacao) {
     }
 }
 
-async function verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao) {
+async function atualizaMovimentacao( atendimento, idLogMovimentacao) {
+    const connection = await connectOracle();
+
+    try {
+        const retornaLeitoAtual = await connection.execute(
+            `SELECT CD_LEITO
+            FROM DBAMV.LOG_MOV_INT_HUMS
+            WHERE ID_LOG_MOV_INT = :idLogMovimentacao`,
+            { idLogMovimentacao }
+        );
+
+        if (retornaLeitoAtual.rows.length === 0) return { error: "Nenhum leito encontrado" };
+
+        const cdLeito = retornaLeitoAtual.rows[0][0];
+
+        const retornaSetorAtual = await connection.execute(
+            `SELECT UNID_INT.CD_SETOR
+            FROM DBAMV.LEITO
+            INNER JOIN DBAMV.UNID_INT ON LEITO.CD_UNID_INT = UNID_INT.CD_UNID_INT
+            WHERE CD_LEITO = :cdLeito`,
+            { cdLeito }
+        );
+
+        if (retornaSetorAtual.rows.length === 0) return { error: "Nenhum setor encontrado" };
+
+        const cdSetor = retornaSetorAtual.rows[0][0];
+
+        await connection.execute(
+            `UPDATE DBAMV.PT_MVTO_PACIENTE
+            SET CD_SETOR = :cdSetor
+            WHERE CD_ATENDIMENTO = :atendimento`,
+            { cdSetor, atendimento },
+            { autoCommit: true }
+        );
+
+        return { message: 'Movimentação atualizada com sucesso' };
+       
+    } catch (error) {
+        return { message: 'Erro ao tentar atualizar movimentação', error };
+    } finally {
+        await connection.close();
+    }
+}
+
+async function verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa) {
     const connection = await connectOracle();
     try {
         const checagem = await connection.execute(
@@ -111,8 +155,10 @@ async function verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimenta
             { atendimento }
         );
 
-        if (checagem.rows[0] == 1) {
-            return { message: 'Movimentação já registrada'} 
+        if (checagem.rows[0] == 1 && etapa == 1) {
+            return { message: 'Movimentação de internação já registrada'} 
+        } else if (checagem.rows[0] == 1 && etapa == 2){
+            return atualizaMovimentacao(atendimento, idLogMovimentacao);
         } else {
             return inserirMovimentacao(atendimento, idLogMovimentacao);
         };
@@ -143,13 +189,18 @@ async function validaTipoDeMovimentacao(atendimento) {
 
         const [tipoDeMovimentacao, idLogMovimentacao] = dadosDaMovimentacao.rows[0];
 
-        // return {message: tipoDeMovimentacao};
-
+        
+        let etapa = 0;
+        
         if (tipoDeMovimentacao == "I") {
-            return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao);
-            // return { message: tipoDeMovimentacao };
+            etapa = 1;
+
+            return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
+            // return { message: `Movimentação de internação já registrada ${etapa}` }
         } else {
-            return {message: 'Tipo de movimentação não é internação'};
+            etapa = 2;
+            return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
+            // return { message: `Movimentação de internação já registrada ${etapa}` }
         }
     } catch (error) {
 
