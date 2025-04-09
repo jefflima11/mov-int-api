@@ -6,7 +6,15 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Agendamento de consulta automatica
-setInterval(() => {
+// Função para executar movimentações e registrar data/hora
+function executarMovimentacao() {
+  const dataHoraAtual = new Date().toLocaleString(); // Formato local de data e hora
+  console.log(`[${dataHoraAtual}] Executando movimentações...`);
   processarMovimentacoesAutomaticamente();
-}, 60000); // 1 minuto
+}
+
+// Executa imediatamente ao iniciar
+executarMovimentacao();
+
+// Agendamento para rodar a cada 1 minuto
+setInterval(executarMovimentacao, 600000);
