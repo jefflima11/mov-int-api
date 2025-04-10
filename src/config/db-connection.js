@@ -7,7 +7,7 @@ const config = {
   connectString: process.env.DB_CONNECT_STRING,
 }
 
-oracledb.initOracleClient({ libDir: '' });
+oracledb.initOracleClient({ libDir: 'C:/oracle/instantclient_21_12/' });
 
 async function connectOracle() {
   try {

@@ -196,9 +196,11 @@ async function validaTipoDeMovimentacao(atendimento) {
             etapa = 1;
 
             return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
+            // return { message: 'Movimentação de internação validada' };
         } else {
             etapa = 2;
             return verificaRegistroDeMovimentoNaPortaria(atendimento, idLogMovimentacao, etapa);
+            // return { message: 'Movimentação de outro tipo validada'};
         }
     } catch (error) {
 
@@ -222,8 +224,7 @@ async function processarMovimentacoesAutomaticamente() {
             const atendimento = movimentacoes.rows[i][0];
             await validaTipoDeMovimentacao(atendimento);
         }
-        console.clear();
-        console.log('Movimentações processadas com sucesso');
+        console.log(`Movimentações processadas com sucesso!`);
     } catch (error) {
         console.error('Erro ao processar movimentações', error);
     } finally {
