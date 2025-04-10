@@ -14,4 +14,4 @@ if (require.main === module) {
     console.log(credentials);
 }
 
-module.export = askCredentials;
+module.exports = askCredentials;
